@@ -15,6 +15,7 @@ export interface IJournalController {
   patchEntry(res: Response, id: string, content: string): void;
   deleteEntry(res: Response, id: string): void;
   deleteEntryFromForm(res: Response, id: string): void;
+  validate(res: Response, term: string, limit: string | undefined): void;
 }
 
 class JournalController implements IJournalController {
@@ -203,6 +204,22 @@ class JournalController implements IJournalController {
     }
     res.status(204).send();
   }
+
+  validate(res: Response, term: string, limit: string | undefined): void {
+    if (!term || term.trim() === "") {
+      res.status(400).send("Search term is required");
+      return;
+    }
+    if(limit) {
+      if (isNaN(Number(limit))) {
+        res.status(400).send("limit not provieded or not a number.")
+        return;
+      }
+    }
+    
+    res.render("views/entries/search.ejs", {term, })
+  }
+
 }
 
 export function CreateJournalController(

@@ -15,6 +15,7 @@ export interface IJournalService {
   replaceEntry(id: string, content: string): Result<IJournalEntry, JournalError>;
   patchEntry(id: string, content: string): Result<IJournalEntry, JournalError>;
   deleteEntry(id: string): Result<null, JournalError>;
+  searchEntry(id: string,limit: number): Result<IJournalEntry[], JournalError>
 }
 
 class JournalService implements IJournalService {
@@ -52,6 +53,21 @@ class JournalService implements IJournalService {
 
   deleteEntry(id: string): Result<null, JournalError> {
     return this.repository.deleteById(id);
+  }
+
+  searchEntry(q: string, limit: number): Result<IJournalEntry[], JournalError>{
+    if (!q || q == ""){
+      return Err(ValidationError("Empty Content"));
+    }
+
+
+    if (limit < 1 || limit > 50) {
+      return Err(ValidationError("Limit out of Range"));
+    }
+
+    return this.repository.getByContent(q, limit)
+
+
   }
 }
 

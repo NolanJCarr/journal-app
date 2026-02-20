@@ -102,8 +102,23 @@ export class ExpressApp implements IApp {
       const id = req.params.id as string;
       this.controller.deleteEntry(res, id);
     });
-  }
 
+    this.app.get("/entries/search", (req: Request, res: Response) => {
+      this.logger.info('GET /entires/search');
+
+      const term = req.query.q as string;
+      const limit = req.query.limit as string | undefined;
+
+      this.controller.validate(res, term, limit);
+    });
+
+    
+
+
+
+  }
+  
+  
   getExpressApp(): express.Express {
     return this.app;
   }

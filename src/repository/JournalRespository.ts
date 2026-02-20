@@ -15,6 +15,7 @@ export interface IJournalRepository {
   replaceById(id: string, content: string): Result<IJournalEntry, JournalError>;
   patchById(id: string, content: string): Result<IJournalEntry, JournalError>;
   deleteById(id: string): Result<null, JournalError>;
+  getByContent(content: string, limit: number): Result<IJournalEntry[], JournalError>
 }
 
 class JournalRepository implements IJournalRepository {
@@ -65,6 +66,16 @@ class JournalRepository implements IJournalRepository {
       }
     }
     return Err(EntryNotFound(`Journal entry with id ${id} not found`));
+  }
+
+  getByContent(content: string, limit: number): Result<IJournalEntry[], JournalError> {
+    let Lcontent = content.toLowerCase()
+    const hits = this.entries.filter((entry) => {
+      return entry.content.toLowerCase().includes(Lcontent);
+    })
+  
+    return Ok(hits.slice(0,limit))
+
   }
 }
 
