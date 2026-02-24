@@ -4,7 +4,7 @@ import {
   JournalError,
   EntryNotFound,
   ValidationError,
-} from '../service/errors.js'
+} from '../lib/errors.js'
 
 /**
  * Repository interface.
@@ -16,14 +16,8 @@ export interface IJournalRepository {
   add(content: string): Promise<Result<IJournalEntry, JournalError>>
   getById(id: string): Promise<Result<IJournalEntry, JournalError>>
   getAll(): Promise<Result<IJournalEntry[], JournalError>>
-  replaceById(
-    id: string,
-    content: string,
-  ): Promise<Result<IJournalEntry, JournalError>>
-  patchById(
-    id: string,
-    content: string,
-  ): Promise<Result<IJournalEntry, JournalError>>
+  replaceById(id: string, content: string): Promise<Result<IJournalEntry, JournalError>>
+  patchById(id: string, content: string): Promise<Result<IJournalEntry, JournalError>>
   deleteById(id: string): Promise<Result<null, JournalError>>
 }
 
