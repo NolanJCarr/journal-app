@@ -67,15 +67,16 @@ export class ExpressApp implements IApp {
         const raw = req.body.content
         const content = typeof raw === 'string' ? raw.trim() : ''
 
+        const rawMood = req.body.mood;
+        const moodValue = typeof rawMood === 'string' ? rawMood.trim() : undefined;
+
         if (!content) {
-          this.logger.warn(
-            'POST /entries/new rejected: content missing or empty',
-          )
-          res.status(400).send('Entry content is required.')
-          return
+          this.logger.warn('POST /entries/new rejected: content missing or empty');
+          res.status(400).send('Entry content is required.');
+          return;
         }
 
-        await controller.newEntryFromForm(res, content)
+        await controller.newEntryFromForm(res, content, moodValue);
       }),
     )
 

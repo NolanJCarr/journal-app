@@ -6,6 +6,7 @@ export interface IMoodRepository {
   add(entryId: string, mood: string): Promise<Result<IMoodEntry, MoodError>>;
   findByEntryId(entryId: string): Promise<Result<IMoodEntry, MoodError>>;
   findRecent(days: number): Promise<Result<IMoodEntry[], MoodError>>;
+  deleteByEntryId(entryId: string): Promise<Result<null, MoodError>>;
 }
 
 export class MoodRepository implements IMoodRepository {
@@ -32,6 +33,11 @@ export class MoodRepository implements IMoodRepository {
     
     const recent = this.moods.filter(m => m.date >= cutoffDate);
     return Promise.resolve(Ok(recent));
+  }
+
+  deleteByEntryId(entryId: string): Promise<Result<null, MoodError>> {
+    this.moods = this.moods.filter(m => m.entryId !== entryId);
+    return Promise.resolve(Ok(null));
   }
 }
 

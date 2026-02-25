@@ -6,6 +6,8 @@ import { MoodError, InvalidMood } from '../lib/errors.js';
 export interface IMoodService {
   addMood(entryId: string, moodValue: string): Promise<Result<IMoodEntry, MoodError>>;
   getRecentMoods(days: number): Promise<Result<IMoodEntry[], MoodError>>;
+  findByEntryId(entryId: string): Promise<Result<IMoodEntry, MoodError>>;
+  deleteByEntryId(entryId: string): Promise<Result<null, MoodError>>
 }
 
 export class MoodService implements IMoodService {
@@ -15,16 +17,30 @@ export class MoodService implements IMoodService {
 
   async addMood(entryId: string, moodValue: string): Promise<Result<IMoodEntry, MoodError>> {
     const normalized = moodValue.trim();
-
     if (!this.validMoods.includes(normalized)) {
       return Err(InvalidMood(`'${normalized}' is not a recognized mood.`));
     }
 
+    const existing = await this.repository.findByEntryId(entryId);
+    
+    if (existing.ok) {
+      await this.repository.deleteByEntryId(entryId);
+    }
+    
     return this.repository.add(entryId, normalized);
+  
+  }
+
+  async deleteByEntryId(entryId: string): Promise<Result<null, MoodError>> {
+    return this.repository.deleteByEntryId(entryId);
   }
 
   async getRecentMoods(days: number): Promise<Result<IMoodEntry[], MoodError>> {
     return this.repository.findRecent(days);
+  }
+
+  async findByEntryId(entryId: string): Promise<Result<IMoodEntry, MoodError>> {
+    return this.repository.findByEntryId(entryId);
   }
 }
 

@@ -4,23 +4,24 @@
 <hr>
 <div class="mood-tracker">
   <% if (locals.mood) { %>
-    <h3>Mood for this entry:</h3>
-    <p><strong><%= mood.mood %></strong> <em>(Logged on <%= new Date(mood.date).toLocaleDateString() %>)</em></p>
+    <p><strong>Current Mood:</strong> <%= mood.mood %> <em>(Logged on <%= new Date(mood.date).toLocaleDateString() %>)</em></p>
+    <h3>Change your mood:</h3>
   <% } else { %>
     <h3>Log your mood for this entry:</h3>
-    <form action="/entries/<%= entry.id %>/mood" method="POST">
-      <label for="mood-select">Mood:</label>
-      <select id="mood-select" name="mood" required>
-        <option value="" disabled selected>Select a mood...</option>
-        <option value="Happy">Happy</option>
-        <option value="Sad">Sad</option>
-        <option value="Focused">Focused</option>
-        <option value="Stressed">Stressed</option>
-        <option value="Calm">Calm</option>
-      </select>
-      <button type="submit">Save Mood</button>
-    </form>
   <% } %>
+  
+  <form action="/entries/<%= entry.id %>/mood" method="POST">
+    <label for="mood-select">Mood:</label>
+    <select id="mood-select" name="mood" required>
+      <option value="" disabled selected>Select a mood...</option>
+      <option value="Happy">Happy</option>
+      <option value="Sad">Sad</option>
+      <option value="Focused">Focused</option>
+      <option value="Stressed">Stressed</option>
+      <option value="Calm">Calm</option>
+    </select>
+    <button type="submit">Save Mood</button>
+  </form>
 </div>
 <hr>
 

@@ -2,11 +2,12 @@ import type { Response } from 'express'
 import { IJournalService } from '../service/JournalService'
 import { ILoggingService } from '../service/LoggingService'
 import { JournalError } from '../lib/errors'
+import { IMoodService, MoodService } from '../service/MoodService.js'
 
 export interface IJournalController {
   showHome(res: Response): Promise<void>
   showEntryForm(res: Response): Promise<void>
-  newEntryFromForm(res: Response, content: string): Promise<void>
+  newEntryFromForm(res: Response, content: string, moodValue?: string): Promise<void>
   showAllEntries(res: Response): Promise<void>
   showEntry(res: Response, id: string): Promise<void>
   showEditForm(res: Response, id: string): Promise<void>
@@ -21,6 +22,7 @@ class JournalController implements IJournalController {
   constructor(
     private readonly service: IJournalService,
     private readonly logger: ILoggingService,
+    private readonly moodService: IMoodService
   ) {}
 
   private isJournalError(value: unknown): value is JournalError {
@@ -52,10 +54,11 @@ class JournalController implements IJournalController {
     res.render('entries/new')
   }
 
-  async newEntryFromForm(res: Response, content: string): Promise<void> {
+  async newEntryFromForm(res: Response, content: string, moodValue?: string): Promise<void> {
     this.logger.info('Creating entry from form')
 
     const result = await this.service.createEntry(content)
+    
     if (!result.ok && this.isJournalError(result.value)) {
       const error = result.value
       if (error.name === 'InvalidContent' || error.name === 'ValidationError') {
@@ -72,6 +75,13 @@ class JournalController implements IJournalController {
     if (!result.ok) {
       res.status(500).send('Unable to create entry.')
       return
+    }
+
+    if (moodValue) {
+      const moodResult = await this.moodService.addMood(result.value.id, moodValue)
+      if (!moodResult.ok) {
+        this.logger.warn(`Failed to attach mood to new entry ${result.value.id}`)
+      }
     }
 
     res.redirect(`/entries/${result.value.id}`)
@@ -99,6 +109,8 @@ class JournalController implements IJournalController {
   async showEntry(res: Response, id: string): Promise<void> {
     this.logger.info(`Showing entry ${id}`)
     const result = await this.service.getEntry(id)
+    const moodResult = await this.moodService.findByEntryId(id);
+    const mood = moodResult.ok ? moodResult.value : null;
     if (
       !result.ok &&
       this.isJournalError(result.value) &&
@@ -118,7 +130,7 @@ class JournalController implements IJournalController {
       return
     }
 
-    res.render('entries/show', { entry: result.value })
+    res.render('entries/show', { entry: result.value, mood: mood })
   }
 
   async showEditForm(res: Response, id: string): Promise<void> {
@@ -204,6 +216,7 @@ class JournalController implements IJournalController {
 
   async deleteEntryFromForm(res: Response, id: string): Promise<void> {
     this.logger.info(`Deleting entry ${id} from form`)
+    await this.moodService.deleteByEntryId(id);
     const result = await this.service.deleteEntry(id)
     if (
       !result.ok &&
@@ -247,6 +260,7 @@ class JournalController implements IJournalController {
 export function CreateJournalController(
   service: IJournalService,
   logger: ILoggingService,
+  moodService: IMoodService
 ): IJournalController {
-  return new JournalController(service, logger)
+  return new JournalController(service, logger, moodService)
 }
