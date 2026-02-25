@@ -1,0 +1,18 @@
+<h2>Your Moods (Last 7 Days)</h2>
+
+<% if (moods.length === 0) { %>
+  <p>You haven't logged any moods in the past week.</p>
+<% } else { %>
+  <ul class="mood-list">
+    <% moods.forEach(function(moodItem) { %>
+      <li>
+        <strong><%= moodItem.mood %></strong> 
+        <span class="text-muted">
+          (Logged on: <%= moodItem.date.toLocaleDateString() %> for Entry #<%= moodItem.entryId %>)
+        </span>
+      </li>
+    <% }); %>
+  </ul>
+<% } %>
+
+<br>

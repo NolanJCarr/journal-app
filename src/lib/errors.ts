@@ -4,6 +4,16 @@ export type JournalError =
   | { name: "ValidationError"; message: string }
   | { name: "UnexpectedDependencyError"; message: string };
 
+export type MoodError = 
+  | { name: "InvalidMood"; message: string }
+  | { name: "EntryNotFound"; message: string }
+
+
+export const InvalidMood = (message: string): MoodError => ({
+  name: "InvalidMood",
+  message,
+});
+
 export const EntryNotFound = (message: string): JournalError => ({
   name: "EntryNotFound",
   message,

@@ -4,6 +4,7 @@ import express, { RequestHandler } from 'express'
 import { Request, Response } from 'express'
 import Layouts from 'express-ejs-layouts'
 import { IJournalController } from './controller/JournalController'
+import { IMoodController } from './controller/MoodController'
 import { ILoggingService } from './service/LoggingService'
 
 // Type for async route handlers, which return a Promise
@@ -21,7 +22,8 @@ export class ExpressApp implements IApp {
 
   constructor(
     private readonly controller: IJournalController,
-    private readonly logger: ILoggingService,
+    private readonly moodController: IMoodController,
+    private readonly logger: ILoggingService
   ) {
     this.app = express()
     this.registerMiddleware()
@@ -151,6 +153,33 @@ export class ExpressApp implements IApp {
         await this.controller.deleteEntry(res, id)
       }),
     )
+
+    this.app.get(
+      '/moods/recent',
+      asyncHandler(async (_req, res) => {
+        this.logger.info('GET /moods/recent')
+        await this.moodController.showRecentMoods(res)
+      }),
+    )
+
+    this.app.post(
+      '/entries/:id/mood',
+      express.urlencoded({ extended: true }), // Required to read HTML form data
+      asyncHandler(async (req, res) => {
+        const entryId = req.params.id as string
+        const rawMood = req.body.mood
+        const moodValue = typeof rawMood === 'string' ? rawMood.trim() : ''
+
+        if (!moodValue) {
+          this.logger.warn(`POST /entries/${entryId}/mood rejected: mood missing`)
+          res.status(400).send('Mood is required.')
+          return
+        }
+
+        this.logger.info(`POST /entries/${entryId}/mood`)
+        await this.moodController.newMoodFromForm(res, entryId, moodValue)
+      }),
+    )
   }
 
   getExpressApp(): express.Express {
@@ -158,7 +187,4 @@ export class ExpressApp implements IApp {
   }
 }
 
-export const CreateApp = (
-  controller: IJournalController,
-  logger: ILoggingService,
-): ExpressApp => new ExpressApp(controller, logger)
+export const CreateApp = (controller: IJournalController, moodController: IMoodController, logger: ILoggingService): ExpressApp => new ExpressApp(controller, moodController, logger)

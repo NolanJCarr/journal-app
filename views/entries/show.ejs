@@ -1,6 +1,29 @@
 <h1>Journal Entry</h1>
 <p><%= entry.content %></p>
 
+<hr>
+<div class="mood-tracker">
+  <% if (locals.mood) { %>
+    <h3>Mood for this entry:</h3>
+    <p><strong><%= mood.mood %></strong> <em>(Logged on <%= new Date(mood.date).toLocaleDateString() %>)</em></p>
+  <% } else { %>
+    <h3>Log your mood for this entry:</h3>
+    <form action="/entries/<%= entry.id %>/mood" method="POST">
+      <label for="mood-select">Mood:</label>
+      <select id="mood-select" name="mood" required>
+        <option value="" disabled selected>Select a mood...</option>
+        <option value="Happy">Happy</option>
+        <option value="Sad">Sad</option>
+        <option value="Focused">Focused</option>
+        <option value="Stressed">Stressed</option>
+        <option value="Calm">Calm</option>
+      </select>
+      <button type="submit">Save Mood</button>
+    </form>
+  <% } %>
+</div>
+<hr>
+
 <p><a href="/entries/<%= entry.id %>/edit">Edit Entry</a></p>
 
 <form action="/entries/<%= entry.id %>/delete" method="POST">
