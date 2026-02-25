@@ -39,7 +39,7 @@ const service = CreateJournalService(repository);
 const MoodService = CreateMoodService(MoodRepository);
 const logger = CreateLoggingService();
 const controller = CreateJournalController(service, logger, MoodService);
-const MoodController = CreateMoodController(MoodService, logger);
+const MoodController = CreateMoodController(MoodService, logger, service);
 const app = CreateApp(controller, MoodController, logger);
 const server = new HttpServer(app);
 

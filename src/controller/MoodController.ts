@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import { IMoodService } from '../service/MoodService.js';
 import { ILoggingService } from '../service/LoggingService.js';
 import { MoodError } from '../lib/errors.js';
+import { IJournalService } from '../service/JournalService.js';
 
 export interface IMoodController {
   newMoodFromForm(res: Response, entryId: string, moodValue: string): Promise<void>;
@@ -11,7 +12,8 @@ export interface IMoodController {
 export class MoodController implements IMoodController {
   constructor(
     private readonly service: IMoodService,
-    private readonly logger: ILoggingService
+    private readonly logger: ILoggingService,
+    private readonly journalService: IJournalService
   ) {}
 
   private isMoodError(value: unknown): value is MoodError {
@@ -20,6 +22,14 @@ export class MoodController implements IMoodController {
 
   async newMoodFromForm(res: Response, entryId: string, moodValue: string): Promise<void> {
     this.logger.info(`Creating mood for entry ${entryId}`);
+
+    const entryCheck = await this.journalService.getEntry(entryId);
+    if (!entryCheck.ok) {
+      this.logger.warn(`Rejected mood: Journal entry ${entryId} does not exist.`);
+      res.status(404).send('Cannot add a mood to a non-existent journal entry.');
+      return;
+    }
+
     const result = await this.service.addMood(entryId, moodValue);
     
     if (!result.ok && this.isMoodError(result.value)) {
@@ -54,6 +64,6 @@ export class MoodController implements IMoodController {
   }
 }
 
-export function CreateMoodController(service: IMoodService, logger: ILoggingService): IMoodController {
-  return new MoodController(service, logger);
+export function CreateMoodController(service: IMoodService, logger: ILoggingService, journalService: IJournalService): IMoodController {
+  return new MoodController(service, logger, journalService);
 }
